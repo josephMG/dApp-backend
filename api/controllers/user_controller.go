@@ -1,51 +1,44 @@
 package controllers
 
 import (
-	"net/http"
-	"strconv"
-
-	"hardhat-backend/constants"
+	"hardhat-backend/api/responses"
+	"hardhat-backend/api_errors"
+	"hardhat-backend/lib"
 	"hardhat-backend/lib/loggers"
 	"hardhat-backend/models"
 	"hardhat-backend/services"
+	"hardhat-backend/utils"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // UserController data type
 type UserController struct {
-	service services.UserService
+	service *services.UserService
 	logger  loggers.Logger
 }
 
 // NewUserController creates new user controller
-func NewUserController(userService services.UserService, logger loggers.Logger) UserController {
-	return UserController{
+func NewUserController(userService *services.UserService, logger loggers.Logger) *UserController {
+	return &UserController{
 		service: userService,
 		logger:  logger,
 	}
 }
 
 // GetOneUser gets one user
-func (u UserController) GetOneUser(c *gin.Context) {
+func (u *UserController) GetOneUser(c *gin.Context) {
 	paramID := c.Param("id")
 
-	id, err := strconv.Atoi(paramID)
+	userID, err := lib.ShouldParseUUID(paramID)
 	if err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		utils.HandleValidationError(u.logger, c, api_errors.ErrInvalidUUID)
 		return
 	}
-	user, err := u.service.GetOneUser(uint(id))
 
+	user, err := u.service.GetOneUser(userID)
 	if err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		utils.HandleError(u.logger, c, err)
 		return
 	}
 
@@ -56,32 +49,25 @@ func (u UserController) GetOneUser(c *gin.Context) {
 }
 
 // GetUser gets the user
-func (u UserController) GetUser(c *gin.Context) {
-	users, err := u.service.GetAllUser()
+func (u *UserController) GetUser(c *gin.Context) {
+	users, err := u.service.SetPaginationScope(utils.Paginate(c)).GetAllUser()
 	if err != nil {
 		u.logger.Error(err)
 	}
-	c.JSON(200, gin.H{"data": users})
+
+	responses.JSONWithPagination(c, 200, users)
 }
 
 // SaveUser saves the user
-func (u UserController) SaveUser(c *gin.Context) {
+func (u *UserController) SaveUser(c *gin.Context) {
 	user := models.User{}
-	trxHandle := c.MustGet(constants.DBTransaction).(*gorm.DB)
-
-	if err := c.ShouldBindJSON(&user); err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+	if err := c.Bind(&user); err != nil {
+		utils.HandleError(u.logger, c, err)
 		return
 	}
 
-	if err := u.service.WithTrx(trxHandle).CreateUser(user); err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+	if err := u.service.Create(&user); err != nil {
+		utils.HandleError(u.logger, c, err)
 		return
 	}
 
@@ -89,28 +75,49 @@ func (u UserController) SaveUser(c *gin.Context) {
 }
 
 // UpdateUser updates user
-func (u UserController) UpdateUser(c *gin.Context) {
-	c.JSON(200, gin.H{"data": "user updated"})
-}
-
-// DeleteUser deletes user
-func (u UserController) DeleteUser(c *gin.Context) {
+func (u *UserController) UpdateUser(c *gin.Context) {
 	paramID := c.Param("id")
 
-	id, err := strconv.Atoi(paramID)
+	userID, err := lib.ShouldParseUUID(paramID)
 	if err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		utils.HandleValidationError(u.logger, c, api_errors.ErrInvalidUUID)
 		return
 	}
 
-	if err := u.service.DeleteUser(uint(id)); err != nil {
-		u.logger.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+	user, err := u.service.GetOneUser(userID)
+	if err != nil {
+		utils.HandleError(u.logger, c, err)
+		return
+	}
+
+	if err := lib.CustomBind(c.Request, &user); err != nil {
+		utils.HandleError(u.logger, c, err)
+		return
+	}
+
+	// metadata, _ := c.MustGet(constants.File).(lib.UploadedFiles)
+	// user.ProfilePic = lib.SignedURL(metadata.GetFile("file").URL)
+
+	if err := u.service.UpdateUser(&user); err != nil {
+		utils.HandleError(u.logger, c, err)
+		return
+	}
+
+	c.JSON(200, gin.H{"data": user})
+}
+
+// DeleteUser deletes user
+func (u *UserController) DeleteUser(c *gin.Context) {
+	paramID := c.Param("id")
+
+	userID, err := lib.ShouldParseUUID(paramID)
+	if err != nil {
+		utils.HandleValidationError(u.logger, c, api_errors.ErrInvalidUUID)
+		return
+	}
+
+	if err := u.service.DeleteUser(userID); err != nil {
+		utils.HandleError(u.logger, c, err)
 		return
 	}
 

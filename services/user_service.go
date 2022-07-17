@@ -1,24 +1,30 @@
 package services
 
 import (
+	"hardhat-backend/lib"
 	"hardhat-backend/lib/loggers"
 	"hardhat-backend/models"
 	"hardhat-backend/repository"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // UserService service layer
 type UserService struct {
-	logger     loggers.Logger
-	repository repository.UserRepository
+	logger          loggers.Logger
+	repository      repository.UserRepository
+	paginationScope *gorm.DB
 }
 
 // NewUserService creates a new userservice
-func NewUserService(logger loggers.Logger, repository repository.UserRepository) UserService {
-	return UserService{
+func NewUserService(
+	logger loggers.Logger,
+	userRepository repository.UserRepository,
+) *UserService {
+	return &UserService{
 		logger:     logger,
-		repository: repository,
+		repository: userRepository,
 	}
 }
 
@@ -28,27 +34,41 @@ func (s UserService) WithTrx(trxHandle *gorm.DB) UserService {
 	return s
 }
 
+// PaginationScope
+func (s UserService) SetPaginationScope(scope func(*gorm.DB) *gorm.DB) UserService {
+	s.paginationScope = s.repository.WithTrx(s.repository.Scopes(scope)).DB
+	return s
+}
+
 // GetOneUser gets one user
-func (s UserService) GetOneUser(id uint) (user models.User, err error) {
-	return user, s.repository.Find(&user, id).Error
+func (s UserService) GetOneUser(userID lib.BinaryUUID) (user models.User, err error) {
+	return user, s.repository.First(&user, "id = ?", userID).Error
 }
 
 // GetAllUser get all the user
-func (s UserService) GetAllUser() (users []models.User, err error) {
-	return users, s.repository.Find(&users).Error
-}
+func (s UserService) GetAllUser() (response map[string]interface{}, err error) {
+	var users []models.User
+	var count int64
 
-// CreateUser call to create the user
-func (s UserService) CreateUser(user models.User) error {
-	return s.repository.Create(&user).Error
+	err = s.repository.WithTrx(s.paginationScope).Find(&users).Offset(-1).Limit(-1).Count(&count).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return gin.H{"data": users, "count": count}, nil
 }
 
 // UpdateUser updates the user
-func (s UserService) UpdateUser(user models.User) error {
+func (s UserService) UpdateUser(user *models.User) error {
 	return s.repository.Save(&user).Error
 }
 
 // DeleteUser deletes the user
-func (s UserService) DeleteUser(id uint) error {
-	return s.repository.Delete(&models.User{}, id).Error
+func (s UserService) DeleteUser(uuid lib.BinaryUUID) error {
+	return s.repository.Where("id = ?", uuid).Delete(&models.User{}).Error
+}
+
+// DeleteUser deletes the user
+func (s UserService) Create(user *models.User) error {
+	return s.repository.Create(&user).Error
 }

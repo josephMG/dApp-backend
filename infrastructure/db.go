@@ -1,4 +1,4 @@
-package lib
+package infrastructure
 
 import (
 	"fmt"
@@ -12,18 +12,12 @@ import (
 // Database modal
 type Database struct {
 	*gorm.DB
+	dsn string
 }
 
 // NewDatabase creates a new database instance
-func NewDatabase(env config.Env, logger loggers.Logger) Database {
-
-	username := env.DBUsername
-	password := env.DBPassword
-	host := env.DBHost
-	port := env.DBPort
-	dbname := env.DBName
-
-	url := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, host, port, dbname)
+func NewDatabase(logger loggers.Logger, env *config.Env) Database {
+	url := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", env.DBUsername, env.DBPassword, env.DBHost, env.DBPort, env.DBName)
 
 	db, err := gorm.Open(mysql.Open(url), &gorm.Config{
 		Logger: logger.GetGormLogger(),
@@ -37,6 +31,7 @@ func NewDatabase(env config.Env, logger loggers.Logger) Database {
 	logger.Info("Database connection established")
 
 	return Database{
-		DB: db,
+		DB:  db,
+		dsn: url,
 	}
 }

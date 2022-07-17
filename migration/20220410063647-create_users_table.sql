@@ -1,11 +1,12 @@
 
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,  
+  `id` BINARY(16) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
   `name` VARCHAR(20) NOT NULL,
   `age` int(10) UNSIGNED,
   `birthday` DATETIME,
+  `wallet_address` VARCHAR(42) NOT NULL,
   `member_number` VARCHAR(100),
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,

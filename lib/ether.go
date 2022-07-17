@@ -18,7 +18,7 @@ type EtherClient struct {
 }
 
 // NewEther creates a new ehter client instance
-func NewEther(env config.Env, logger loggers.Logger) EtherClient {
+func NewEther(env *config.Env, logger loggers.Logger) EtherClient {
 	client, err := ethclient.Dial(env.EthereumURL)
 	if err != nil {
 		logger.Error(err.Error())

@@ -6,7 +6,5 @@ import (
 
 // Module exports dependency
 var Module = fx.Options(
-	fx.Provide(NewRequestHandler),
-	fx.Provide(NewDatabase),
 	fx.Provide(NewEther),
 )

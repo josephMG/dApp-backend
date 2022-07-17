@@ -12,12 +12,12 @@ import (
 
 // JWTAuthService service relating to authorization
 type JWTAuthService struct {
-	env    config.Env
+	env    *config.Env
 	logger loggers.Logger
 }
 
 // NewJWTAuthService creates a new auth service
-func NewJWTAuthService(env config.Env, logger loggers.Logger) JWTAuthService {
+func NewJWTAuthService(env *config.Env, logger loggers.Logger) JWTAuthService {
 	return JWTAuthService{
 		env:    env,
 		logger: logger,
@@ -47,7 +47,7 @@ func (s JWTAuthService) CreateToken(user models.User) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.ID,
 		"name":  user.Name,
-		"email": *user.Email,
+		"email": user.Email,
 	})
 
 	tokenString, err := token.SignedString([]byte(s.env.JWTSecret))

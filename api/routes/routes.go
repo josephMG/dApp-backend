@@ -20,9 +20,9 @@ type Route interface {
 
 // NewRoutes sets up routes
 func NewRoutes(
-	userRoutes UserRoutes,
-	authRoutes AuthRoutes,
-	contractRoutes ContractRoutes,
+	userRoutes *UserRoutes,
+	authRoutes *AuthRoutes,
+	contractRoutes *ContractRoutes,
 ) Routes {
 	return Routes{
 		userRoutes,

@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"hardhat-backend/api_errors"
+	"hardhat-backend/lib"
 	"hardhat-backend/lib/loggers"
 	"hardhat-backend/services"
+	"hardhat-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,14 +14,14 @@ import (
 type JWTAuthController struct {
 	logger      loggers.Logger
 	service     services.JWTAuthService
-	userService services.UserService
+	userService *services.UserService
 }
 
 // NewJWTAuthController creates new controller
 func NewJWTAuthController(
 	logger loggers.Logger,
 	service services.JWTAuthService,
-	userService services.UserService,
+	userService *services.UserService,
 ) JWTAuthController {
 	return JWTAuthController{
 		logger:      logger,
@@ -32,7 +35,15 @@ func (jwt JWTAuthController) SignIn(c *gin.Context) {
 	jwt.logger.Info("SignIn route called")
 	// Currently not checking for username and password
 	// Can add the logic later if necessary.
-	user, _ := jwt.userService.GetOneUser(uint(1))
+	paramID := c.Param("id")
+
+	userID, err := lib.ShouldParseUUID(paramID)
+	if err != nil {
+		utils.HandleValidationError(jwt.logger, c, api_errors.ErrInvalidUUID)
+		return
+	}
+
+	user, _ := jwt.userService.GetOneUser(userID)
 	token := jwt.service.CreateToken(user)
 	c.JSON(200, gin.H{
 		"message": "logged in successfully",
