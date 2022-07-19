@@ -45,6 +45,12 @@ func (s UserService) GetOneUser(userID lib.BinaryUUID) (user models.User, err er
 	return user, s.repository.First(&user, "id = ?", userID).Error
 }
 
+// GetOneUser gets one user
+func (s UserService) GetOneUserByWalletAddress(walletAddress string) (user models.User, newUser int64, err error) {
+	result := s.repository.FirstOrCreate(&user, models.User{WalletAddress: walletAddress})
+	return user, result.RowsAffected, result.Error
+}
+
 // GetAllUser get all the user
 func (s UserService) GetAllUser() (response map[string]interface{}, err error) {
 	var users []models.User

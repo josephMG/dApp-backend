@@ -12,15 +12,14 @@ import (
 // User model
 type User struct {
 	lib.ModelBase
-	Name          string         `json:"name" form:"name"`
-	Email         string         `json:"email" form:"email"`
-	Age           int            `json:"age" form:"age"`
+	Name          string         `json:"name"`
+	Email         string         `json:"email"`
 	Birthday      *time.Time     `json:"time"`
-	WalletAddress string         `json:"address"`
-	MemberNumber  sql.NullString `json:"member_number"`
+	WalletAddress string         `json:"walletAddress" gorm:"uniqueIndex"`
+	MemberNumber  sql.NullString `json:"memberNumber"`
 	//	ProfilePic   lib.SignedURL  `json:"profile_pic"`
-	CreatedAt time.Time `json:"created_at" form:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" form:"updated_at"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // BeforeCreate run this before creating user

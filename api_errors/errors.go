@@ -8,6 +8,7 @@ import (
 var (
 	ErrUnauthorizedAccess     = errors.New("unauthorized access")
 	ErrInvalidUUID            = errors.New("invalid uuid")
+	ErrInvalidRequest         = errors.New("invalid request")
 	ErrExtensionMismatch      = errors.New("file extension not supported")
 	ErrThumbExtensionMismatch = errors.New("file extension not supported for thumbnail")
 	ErrFileRead               = errors.New("file read error")

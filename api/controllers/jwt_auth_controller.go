@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"hardhat-backend/api_errors"
-	"hardhat-backend/lib"
 	"hardhat-backend/lib/loggers"
 	"hardhat-backend/services"
 	"hardhat-backend/utils"
@@ -15,6 +14,10 @@ type JWTAuthController struct {
 	logger      loggers.Logger
 	service     services.JWTAuthService
 	userService *services.UserService
+}
+
+type SignInRequest struct {
+	WalletAddress string `json:"walletAddress"`
 }
 
 // NewJWTAuthController creates new controller
@@ -33,21 +36,24 @@ func NewJWTAuthController(
 // SignIn signs in user
 func (jwt JWTAuthController) SignIn(c *gin.Context) {
 	jwt.logger.Info("SignIn route called")
-	// Currently not checking for username and password
-	// Can add the logic later if necessary.
-	paramID := c.Param("id")
-
-	userID, err := lib.ShouldParseUUID(paramID)
+	var request SignInRequest
+	err := c.BindJSON(&request)
 	if err != nil {
-		utils.HandleValidationError(jwt.logger, c, api_errors.ErrInvalidUUID)
+		utils.HandleValidationError(jwt.logger, c, api_errors.ErrInvalidRequest)
 		return
 	}
+	walletAddress := request.WalletAddress
 
-	user, _ := jwt.userService.GetOneUser(userID)
-	token := jwt.service.CreateToken(user)
+	user, newUser, err := jwt.userService.GetOneUserByWalletAddress(walletAddress)
+	if err != nil {
+		utils.HandleError(jwt.logger, c, err)
+		return
+	}
+	// token := jwt.service.CreateToken(user)
 	c.JSON(200, gin.H{
 		"message": "logged in successfully",
-		"token":   token,
+		"user":    user,
+		"newUser": newUser,
 	})
 }
 
