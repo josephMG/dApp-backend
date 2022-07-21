@@ -52,8 +52,10 @@ func (jwt JWTAuthController) SignIn(c *gin.Context) {
 	// token := jwt.service.CreateToken(user)
 	c.JSON(200, gin.H{
 		"message": "logged in successfully",
-		"user":    user,
-		"newUser": newUser,
+		"data": gin.H{
+			"user":    user,
+			"newUser": newUser,
+		},
 	})
 }
 
