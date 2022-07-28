@@ -23,3 +23,11 @@ func NewContractService(logger loggers.Logger, client lib.EtherClient) ContractS
 func (c ContractService) GetBalance(address string) *big.Float {
 	return c.client.GetBalance(address)
 }
+
+func (c ContractService) GetGreeting() string {
+	return c.client.GetGreetingFromContract()
+}
+
+func (c ContractService) PostGreeting(greeting string) string {
+	return c.client.PostGreeting(greeting)
+}

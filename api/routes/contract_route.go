@@ -18,7 +18,9 @@ func (s *ContractRoutes) Setup() {
 	s.logger.Info("Setting up routes")
 	api := s.handler.Group("/api")
 	{
-		api.GET("/contract/get_balance/:address", s.contractController.GetBalance)
+		api.GET("/contract/balance/:address", s.contractController.GetBalance)
+		api.GET("/contract/greeting", s.contractController.GetGreeting)
+		api.POST("/contract/greeting", s.contractController.PostGreeting)
 	}
 }
 

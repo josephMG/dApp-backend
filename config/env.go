@@ -17,9 +17,11 @@ type Env struct {
 	DBPort             string `mapstructure:"DB_PORT"`
 	DBName             string `mapstructure:"DB_NAME"`
 	JWTSecret          string `mapstructure:"JWT_SECRET"`
-	EthereumURL        string `mapstructure:"ETHEREUM_URL"`
 	MaxMultipartMemory int64  `mapstructure:"MAX_MULTIPART_MEMORY"`
 	TimeZone           string `mapstructure:"TIMEZONE"`
+	EthereumURL        string `mapstructure:"ETHEREUM_URL"`
+	ContractAddr       string `mapstructure:"CONTRACT_ADDRESS"`
+	AccountPrivateKey  string `mapstructure:"ACCOUNT_PRIVATE_KEY"`
 }
 
 var globalEnv = Env{
