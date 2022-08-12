@@ -25,9 +25,9 @@ func (c ContractService) GetBalance(address string) *big.Float {
 }
 
 func (c ContractService) GetGreeting() string {
-	return c.client.GetGreetingFromContract()
+	return c.client.GetGreetingFromInstance()
 }
 
 func (c ContractService) PostGreeting(greeting string) string {
-	return c.client.PostGreeting(greeting)
+	return c.client.PostGreetingToInstance(greeting)
 }

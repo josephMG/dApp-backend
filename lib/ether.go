@@ -80,8 +80,8 @@ func (c EtherClient) GetGreeting() string {
 	return strings.TrimSpace(string(res[:]))
 }
 
-// GetGreeting get greeting string from contract function address
-func (c EtherClient) GetGreetingFromContract() string {
+// GetGreetingFromInstance get greeting string from contract instance
+func (c EtherClient) GetGreetingFromInstance() string {
 	contractAddr := common.HexToAddress(c.Env.ContractAddr)
 	instance, err := greeter.NewGreeter(contractAddr, c.Client)
 
@@ -92,8 +92,8 @@ func (c EtherClient) GetGreetingFromContract() string {
 	return tx
 }
 
-// GetGreeting get greeting string from contract function address
-func (c EtherClient) PostGreeting(greeting string) string {
+// PstGreeting post greeting string to contract instance
+func (c EtherClient) PostGreetingToInstance(greeting string) string {
 	auth, err := GetAuth(c, c.Env.AccountPrivateKey)
 
 	contractAddr := common.HexToAddress(c.Env.ContractAddr)
